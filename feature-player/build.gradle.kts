@@ -57,6 +57,13 @@ dependencies {
 
     implementation(libs.androidx.lifecycle.viewmodel.compose)
 
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.gson)
+
+    implementation(libs.coroutines.android)
+
+    implementation(libs.navigation.compose)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

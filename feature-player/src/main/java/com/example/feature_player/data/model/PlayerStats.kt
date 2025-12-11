@@ -1,4 +1,4 @@
-package com.example.crikstats.data.model
+package com.example.feature_player.data.model
 
 data class PlayerStats(
     val name: String,

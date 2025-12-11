@@ -1,7 +1,7 @@
-package com.example.crikstats.di
+package com.example.feature_player.di
 
-import com.example.crikstats.data.remote.CricketApiService
-import com.example.crikstats.data.remote.CricketApiServiceImpl
+import com.example.feature_player.data.remote.CricketApiService
+import com.example.feature_player.data.remote.CricketApiServiceImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

@@ -1,6 +1,6 @@
-package com.example.crikstats.data.remote
+package com.example.feature_player.data.remote
 
-import com.example.crikstats.data.model.PlayerStats
+import com.example.feature_player.data.model.PlayerStats
 import kotlinx.coroutines.delay
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -9,7 +9,7 @@ import javax.inject.Singleton
 class CricketApiServiceImpl @Inject constructor() : CricketApiService {
 
     override suspend fun getPlayerStats(): PlayerStats {
-        delay(500)
+        delay(1500)
         return PlayerStats(
             name = "Virat Kohli",
             matches = 253,

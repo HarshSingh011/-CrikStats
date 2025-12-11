@@ -61,10 +61,6 @@ dependencies {
     implementation(libs.play.feature.delivery)
     implementation(libs.play.feature.delivery.ktx)
 
-    implementation(libs.retrofit)
-    implementation(libs.retrofit.converter.gson)
-
-    implementation(libs.coroutines.android)
 
     testImplementation(libs.junit)
 }

@@ -1,4 +1,4 @@
-package com.example.crikstats.domain.util
+package com.example.feature_player.domain.util
 
 sealed class Resource<T>(
     val data: T? = null,
