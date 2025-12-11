@@ -28,24 +28,6 @@
             </PendingDiffInfo>
           </value>
         </entry>
-        <entry key="$PROJECT_DIR$/app/src/main/java/com/example/crikstats/MainActivity.kt">
-          <value>
-            <PendingDiffInfo>
-              <option name="filePath" value="$PROJECT_DIR$/app/src/main/java/com/example/crikstats/MainActivity.kt" />
-              <option name="originalContent" value="package com.example.crikstats&#10;&#10;import android.os.Bundle&#10;import androidx.activity.ComponentActivity&#10;import androidx.activity.compose.setContent&#10;import androidx.activity.enableEdgeToEdge&#10;import androidx.compose.foundation.layout.fillMaxSize&#10;import androidx.compose.foundation.layout.padding&#10;import androidx.compose.material3.Scaffold&#10;import androidx.compose.material3.Text&#10;import androidx.compose.runtime.Composable&#10;import androidx.compose.ui.Modifier&#10;import androidx.compose.ui.tooling.preview.Preview&#10;import com.example.crikstats.ui.theme.CrikStatsTheme&#10;&#10;class MainActivity : ComponentActivity() {&#10;    override fun onCreate(savedInstanceState: Bundle?) {&#10;        super.onCreate(savedInstanceState)&#10;        enableEdgeToEdge()&#10;        setContent {&#10;            CrikStatsTheme {&#10;                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding -&gt;&#10;                    Greeting(&#10;                        name = &quot;Android&quot;,&#10;                        modifier = Modifier.padding(innerPadding)&#10;                    )&#10;                }&#10;            }&#10;        }&#10;    }&#10;}&#10;&#10;@Composable&#10;fun Greeting(name: String, modifier: Modifier = Modifier) {&#10;    Text(&#10;        text = &quot;Hello $name!&quot;,&#10;        modifier = modifier&#10;    )&#10;}&#10;&#10;@Preview(showBackground = true)&#10;@Composable&#10;fun GreetingPreview() {&#10;    CrikStatsTheme {&#10;        Greeting(&quot;Android&quot;)&#10;    }&#10;}&#10;" />
-              <option name="updatedContent" value="package com.example.crikstats&#10;&#10;import android.os.Bundle&#10;import androidx.activity.ComponentActivity&#10;import androidx.activity.compose.setContent&#10;import androidx.activity.enableEdgeToEdge&#10;import androidx.compose.foundation.layout.fillMaxSize&#10;import androidx.compose.foundation.layout.padding&#10;import androidx.compose.material3.Scaffold&#10;import androidx.compose.material3.Text&#10;import androidx.compose.runtime.Composable&#10;import androidx.compose.ui.Modifier&#10;import androidx.compose.ui.tooling.preview.Preview&#10;import com.example.crikstats.ui.theme.CrikStatsTheme&#10;import dagger.hilt.android.AndroidEntryPoint&#10;&#10;@AndroidEntryPoint&#10;class MainActivity : ComponentActivity() {&#10;    override fun onCreate(savedInstanceState: Bundle?) {&#10;        super.onCreate(savedInstanceState)&#10;        enableEdgeToEdge()&#10;        setContent {&#10;            CrikStatsTheme {&#10;                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding -&gt;&#10;                    Greeting(&#10;                        name = &quot;Android&quot;,&#10;                        modifier = Modifier.padding(innerPadding)&#10;                    )&#10;                }&#10;            }&#10;        }&#10;    }&#10;}&#10;&#10;@Composable&#10;fun Greeting(name: String, modifier: Modifier = Modifier) {&#10;    Text(&#10;        text = &quot;Hello $name!&quot;,&#10;        modifier = modifier&#10;    )&#10;}&#10;&#10;@Preview(showBackground = true)&#10;@Composable&#10;fun GreetingPreview() {&#10;    CrikStatsTheme {&#10;        Greeting(&quot;Android&quot;)&#10;    }&#10;}&#10;&#10;" />
-            </PendingDiffInfo>
-          </value>
-        </entry>
-        <entry key="$PROJECT_DIR$/app/src/main/java/com/example/crikstats/data/model/PlayerStats.kt">
-          <value>
-            <PendingDiffInfo>
-              <option name="filePath" value="$PROJECT_DIR$/app/src/main/java/com/example/crikstats/data/model/PlayerStats.kt" />
-              <option name="originalContent" value="&#10;" />
-              <option name="updatedContent" value="package com.example.crikstats.data.model&#10;&#10;data class PlayerStats(&#10;    val name: String,&#10;    val matches: Int,&#10;    val average: Double&#10;)&#10;&#10;" />
-            </PendingDiffInfo>
-          </value>
-        </entry>
         <entry key="$PROJECT_DIR$/app/src/main/java/com/example/crikstats/data/remote/CricketApiServiceImpl.kt">
           <value>
             <PendingDiffInfo>
@@ -59,15 +41,6 @@
             <PendingDiffInfo>
               <option name="filePath" value="$PROJECT_DIR$/app/src/main/java/com/example/crikstats/data/remote/MockInterceptor.kt" />
               <option name="updatedContent" value="package com.example.crikstats.data.remote&#10;&#10;import com.example.crikstats.data.model.PlayerStats&#10;import okhttp3.Interceptor&#10;import okhttp3.MediaType.Companion.toMediaType&#10;import okhttp3.Protocol&#10;import okhttp3.Response&#10;import okhttp3.ResponseBody.Companion.toResponseBody&#10;import com.google.gson.Gson&#10;&#10;class MockInterceptor : Interceptor {&#10;&#10;    private val gson = Gson()&#10;&#10;    override fun intercept(chain: Interceptor.Chain): Response {&#10;        val request = chain.request()&#10;        val path = request.url.encodedPath&#10;&#10;        Thread.sleep(1500)&#10;&#10;        val responseBody = when {&#10;            path.contains(&quot;virat-kohli&quot;) -&gt; {&#10;                val mockData = PlayerStats(&#10;                    name = &quot;Virat Kohli&quot;,&#10;                    matches = 253,&#10;                    average = 57.8&#10;                )&#10;                gson.toJson(mockData)&#10;            }&#10;            else -&gt; &quot;&quot;&quot;{&quot;error&quot;: &quot;Endpoint not found&quot;}&quot;&quot;&quot;&#10;        }&#10;&#10;        return Response.Builder()&#10;            .code(200)&#10;            .message(&quot;OK&quot;)&#10;            .request(request)&#10;            .protocol(Protocol.HTTP_1_1)&#10;            .body(responseBody.toResponseBody(&quot;application/json&quot;.toMediaType()))&#10;            .build()&#10;    }&#10;}&#10;" />
-            </PendingDiffInfo>
-          </value>
-        </entry>
-        <entry key="$PROJECT_DIR$/app/src/main/java/com/example/crikstats/domain/util/Resource.kt">
-          <value>
-            <PendingDiffInfo>
-              <option name="filePath" value="$PROJECT_DIR$/app/src/main/java/com/example/crikstats/domain/util/Resource.kt" />
-              <option name="originalContent" value="&#10;" />
-              <option name="updatedContent" value="package com.example.crikstats.domain.util&#10;&#10;sealed class Resource&lt;T&gt;(&#10;    val data: T? = null,&#10;    val message: String? = null&#10;) {&#10;    class Success&lt;T&gt;(data: T) : Resource&lt;T&gt;(data)&#10;    class Error&lt;T&gt;(message: String, data: T? = null) : Resource&lt;T&gt;(data, message)&#10;    class Loading&lt;T&gt;(data: T? = null) : Resource&lt;T&gt;(data)&#10;}&#10;&#10;" />
             </PendingDiffInfo>
           </value>
         </entry>
