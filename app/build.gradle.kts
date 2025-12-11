@@ -10,7 +10,7 @@ android {
     namespace = "com.example.crikstats"
     compileSdk = 36
 
-    dynamicFeatures += setOf(":feature-player")
+    dynamicFeatures += setOf(":featureplayer")
 
     defaultConfig {
         applicationId = "com.example.crikstats"
@@ -38,6 +38,11 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
+
+    kapt {
+        correctErrorTypes = true
+    }
+
     buildFeatures {
         compose = true
     }

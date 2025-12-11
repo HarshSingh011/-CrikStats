@@ -2,12 +2,10 @@ plugins {
     alias(libs.plugins.android.dynamic.feature)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.hilt.android)
-    alias(libs.plugins.kotlin.kapt)
 }
 
 android {
-    namespace = "com.example.feature_player"
+    namespace = "com.example.crikstats.featureplayer"
     compileSdk = 36
 
     defaultConfig {
@@ -52,8 +50,6 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.material.icons.extended)
 
-    implementation(libs.hilt.android)
-    kapt(libs.hilt.compiler)
 
     implementation(libs.androidx.lifecycle.viewmodel.compose)
 

@@ -2,11 +2,8 @@ package com.example.feature_player.data.remote
 
 import com.example.feature_player.data.model.PlayerStats
 import kotlinx.coroutines.delay
-import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
-class CricketApiServiceImpl @Inject constructor() : CricketApiService {
+class CricketApiServiceImpl : CricketApiService {
 
     override suspend fun getPlayerStats(): PlayerStats {
         delay(1500)

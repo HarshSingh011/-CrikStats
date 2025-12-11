@@ -55,7 +55,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             CrikStatsTheme {
                 val isModuleInstalled = remember {
-                    mutableStateOf(splitInstallManager.installedModules.contains("feature_player"))
+                    mutableStateOf(splitInstallManager.installedModules.contains("featureplayer"))
                 }
 
                 HomeScreen(
@@ -64,7 +64,7 @@ class MainActivity : ComponentActivity() {
                         downloadPlayerModule()
                         GlobalScope.launch {
                             delay(2000)
-                            isModuleInstalled.value = splitInstallManager.installedModules.contains("feature_player")
+                            isModuleInstalled.value = splitInstallManager.installedModules.contains("featureplayer")
                         }
                     },
                     onOpenPlayerStats = { openPlayerStats() }
@@ -85,7 +85,7 @@ class MainActivity : ComponentActivity() {
 
     private fun downloadPlayerModule() {
         val request = SplitInstallRequest.newBuilder()
-            .addModule("feature_player")
+            .addModule("featureplayer")
             .build()
 
         splitInstallManager.startInstall(request)
@@ -99,11 +99,11 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun openPlayerStats() {
-        if (splitInstallManager.installedModules.contains("feature_player")) {
+        if (splitInstallManager.installedModules.contains("featureplayer")) {
             try {
                 val intent = Intent().setClassName(
                     this,
-                    "com.example.crikstats.feature.player.PlayerStatsActivity"
+                    "com.example.feature_player.presentation.PlayerStatsActivity"
                 )
                 startActivity(intent)
             } catch (e: Exception) {
