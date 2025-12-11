@@ -39,6 +39,7 @@ android {
     buildFeatures {
         compose = true
     }
+    dynamicFeatures += setOf(":feature-player")
 }
 
 dependencies {
@@ -51,10 +52,15 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation("androidx.compose.material:material-icons-extended:1.5.4")
 
     // Hilt
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
+
+    // Play Core for Dynamic Feature Modules
+    implementation(libs.play.feature.delivery)
+    implementation(libs.play.feature.delivery.ktx)
 
     // Retrofit for API calls
     implementation(libs.retrofit)
