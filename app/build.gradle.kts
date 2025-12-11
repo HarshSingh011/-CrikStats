@@ -10,6 +10,8 @@ android {
     namespace = "com.example.crikstats"
     compileSdk = 36
 
+    dynamicFeatures += setOf(":feature-player")
+
     defaultConfig {
         applicationId = "com.example.crikstats"
         minSdk = 24
@@ -39,7 +41,6 @@ android {
     buildFeatures {
         compose = true
     }
-    dynamicFeatures += setOf(":feature-player")
 }
 
 dependencies {
@@ -52,21 +53,17 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    implementation("androidx.compose.material:material-icons-extended:1.5.4")
+    implementation(libs.androidx.material.icons.extended.v154)
 
-    // Hilt
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
 
-    // Play Core for Dynamic Feature Modules
     implementation(libs.play.feature.delivery)
     implementation(libs.play.feature.delivery.ktx)
 
-    // Retrofit for API calls
     implementation(libs.retrofit)
     implementation(libs.retrofit.converter.gson)
 
-    // Coroutines
     implementation(libs.coroutines.android)
 
     testImplementation(libs.junit)
