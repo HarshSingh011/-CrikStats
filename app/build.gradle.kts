@@ -41,6 +41,15 @@ android {
 
     kapt {
         correctErrorTypes = true
+        javacOptions {
+            option("-Xmaxerrs", 500)
+        }
+    }
+
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+        }
     }
 
     buildFeatures {
@@ -63,9 +72,13 @@ dependencies {
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
 
+    kaptAndroidTest(libs.hilt.compiler)
+    androidTestImplementation("com.google.dagger:hilt-android-testing:2.48")
+
     implementation(libs.play.feature.delivery)
     implementation(libs.play.feature.delivery.ktx)
 
-
     testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
 }

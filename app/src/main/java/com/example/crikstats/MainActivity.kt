@@ -42,8 +42,11 @@ class MainActivity : ComponentActivity() {
                 Toast.makeText(this, "Module installed successfully!", Toast.LENGTH_SHORT).show()
             }
             SplitInstallSessionStatus.DOWNLOADING -> {
-                val progress = (state.bytesDownloaded() * 100 / state.totalBytesToDownload()).toInt()
-                Toast.makeText(this, "Downloading: $progress%", Toast.LENGTH_SHORT).show()
+                val totalBytes = state.totalBytesToDownload()
+                if (totalBytes > 0) {
+                    val progress = (state.bytesDownloaded() * 100 / totalBytes).toInt()
+                    Toast.makeText(this, "Downloading: $progress%", Toast.LENGTH_SHORT).show()
+                }
             }
             SplitInstallSessionStatus.FAILED -> {
                 Toast.makeText(this, "Download failed: ${state.errorCode()}", Toast.LENGTH_SHORT).show()
@@ -59,6 +62,7 @@ class MainActivity : ComponentActivity() {
 
         splitInstallManager = SplitInstallManagerFactory.create(this)
 
+        // Check if this is first launch and reset module state if needed
         validateModuleState()
 
         setContent {
@@ -87,6 +91,7 @@ class MainActivity : ComponentActivity() {
         val isInitialized = prefs.getBoolean(KEY_APP_INITIALIZED, false)
 
         if (!isInitialized) {
+            // First launch or after data clear - reset module state
             prefs.edit()
                 .putBoolean(KEY_APP_INITIALIZED, true)
                 .putBoolean(KEY_MODULE_INSTALLED, false)
