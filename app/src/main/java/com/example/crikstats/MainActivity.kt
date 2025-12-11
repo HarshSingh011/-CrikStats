@@ -29,9 +29,16 @@ class MainActivity : ComponentActivity() {
     private lateinit var splitInstallManager: SplitInstallManager
     private var sessionId = 0
 
+    companion object {
+        private const val PREFS_NAME = "crikstats_prefs"
+        private const val KEY_MODULE_INSTALLED = "module_installed"
+        private const val KEY_APP_INITIALIZED = "app_initialized"
+    }
+
     private val listener = SplitInstallStateUpdatedListener { state ->
         when (state.status()) {
             SplitInstallSessionStatus.INSTALLED -> {
+                saveModuleInstallState(true)
                 Toast.makeText(this, "Module installed successfully!", Toast.LENGTH_SHORT).show()
             }
             SplitInstallSessionStatus.DOWNLOADING -> {
@@ -52,10 +59,12 @@ class MainActivity : ComponentActivity() {
 
         splitInstallManager = SplitInstallManagerFactory.create(this)
 
+        validateModuleState()
+
         setContent {
             CrikStatsTheme {
                 val isModuleInstalled = remember {
-                    mutableStateOf(splitInstallManager.installedModules.contains("featureplayer"))
+                    mutableStateOf(getModuleInstallState())
                 }
 
                 HomeScreen(
@@ -64,13 +73,35 @@ class MainActivity : ComponentActivity() {
                         downloadPlayerModule()
                         GlobalScope.launch {
                             delay(2000)
-                            isModuleInstalled.value = splitInstallManager.installedModules.contains("featureplayer")
+                            isModuleInstalled.value = getModuleInstallState()
                         }
                     },
                     onOpenPlayerStats = { openPlayerStats() }
                 )
             }
         }
+    }
+
+    private fun validateModuleState() {
+        val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+        val isInitialized = prefs.getBoolean(KEY_APP_INITIALIZED, false)
+
+        if (!isInitialized) {
+            prefs.edit()
+                .putBoolean(KEY_APP_INITIALIZED, true)
+                .putBoolean(KEY_MODULE_INSTALLED, false)
+                .apply()
+        }
+    }
+
+    private fun getModuleInstallState(): Boolean {
+        val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+        return prefs.getBoolean(KEY_MODULE_INSTALLED, false)
+    }
+
+    private fun saveModuleInstallState(installed: Boolean) {
+        val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+        prefs.edit().putBoolean(KEY_MODULE_INSTALLED, installed).apply()
     }
 
     override fun onResume() {
@@ -99,7 +130,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun openPlayerStats() {
-        if (splitInstallManager.installedModules.contains("featureplayer")) {
+        if (getModuleInstallState()) {
             try {
                 val intent = Intent().setClassName(
                     this,
