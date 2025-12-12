@@ -5,54 +5,40 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material.icons.filled.Download
-import androidx.compose.material.icons.filled.Sports
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.mutableStateOf
 import com.example.crikstats.ui.theme.CrikStatsTheme
 import com.google.android.play.core.splitinstall.*
 import com.google.android.play.core.splitinstall.model.SplitInstallSessionStatus
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     private lateinit var splitInstallManager: SplitInstallManager
-    private var sessionId = 0
+    private val moduleInstallState = mutableStateOf(false)
 
     companion object {
         private const val PREFS_NAME = "crikstats_prefs"
-        private const val KEY_MODULE_INSTALLED = "module_installed"
-        private const val KEY_APP_INITIALIZED = "app_initialized"
+        private const val KEY_MODULE_DOWNLOADED = "module_downloaded"
     }
 
-    private val listener = SplitInstallStateUpdatedListener { state ->
+    private val installListener = SplitInstallStateUpdatedListener { state ->
         when (state.status()) {
             SplitInstallSessionStatus.INSTALLED -> {
-                saveModuleInstallState(true)
-                Toast.makeText(this, "Module installed successfully!", Toast.LENGTH_SHORT).show()
+                saveModuleDownloadedState(true)
+                updateModuleState()
+                showToast("Module installed successfully!")
             }
             SplitInstallSessionStatus.DOWNLOADING -> {
-                val totalBytes = state.totalBytesToDownload()
-                if (totalBytes > 0) {
-                    val progress = (state.bytesDownloaded() * 100 / totalBytes).toInt()
-                    Toast.makeText(this, "Downloading: $progress%", Toast.LENGTH_SHORT).show()
-                }
+                val progress = calculateDownloadProgress(state)
+                if (progress > 0) showToast("Downloading: $progress%")
             }
             SplitInstallSessionStatus.FAILED -> {
-                Toast.makeText(this, "Download failed: ${state.errorCode()}", Toast.LENGTH_SHORT).show()
+                updateModuleState()
+                showToast("Download failed: ${state.errorCode()}")
             }
             SplitInstallSessionStatus.INSTALLING -> {
-                Toast.makeText(this, "Installing module...", Toast.LENGTH_SHORT).show()
+                showToast("Installing module...")
             }
         }
     }
@@ -61,235 +47,91 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         splitInstallManager = SplitInstallManagerFactory.create(this)
-
-        // Check if this is first launch and reset module state if needed
-        validateModuleState()
+        initializeModuleState()
 
         setContent {
             CrikStatsTheme {
-                val isModuleInstalled = remember {
-                    mutableStateOf(getModuleInstallState())
-                }
-
                 HomeScreen(
-                    isModuleInstalled = isModuleInstalled.value,
-                    onDownloadModule = {
-                        downloadPlayerModule()
-                        GlobalScope.launch {
-                            delay(2000)
-                            isModuleInstalled.value = getModuleInstallState()
-                        }
-                    },
-                    onOpenPlayerStats = { openPlayerStats() }
+                    isModuleInstalled = moduleInstallState.value,
+                    onDownloadModule = ::downloadModule,
+                    onOpenPlayerStats = ::openPlayerStats
                 )
             }
         }
     }
 
-    private fun validateModuleState() {
-        val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
-        val isInitialized = prefs.getBoolean(KEY_APP_INITIALIZED, false)
-
-        if (!isInitialized) {
-            // First launch or after data clear - reset module state
-            prefs.edit()
-                .putBoolean(KEY_APP_INITIALIZED, true)
-                .putBoolean(KEY_MODULE_INSTALLED, false)
-                .apply()
-        }
-    }
-
-    private fun getModuleInstallState(): Boolean {
-        val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
-        return prefs.getBoolean(KEY_MODULE_INSTALLED, false)
-    }
-
-    private fun saveModuleInstallState(installed: Boolean) {
-        val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
-        prefs.edit().putBoolean(KEY_MODULE_INSTALLED, installed).apply()
-    }
-
     override fun onResume() {
         super.onResume()
-        splitInstallManager.registerListener(listener)
+        splitInstallManager.registerListener(installListener)
+        updateModuleState()
     }
 
     override fun onPause() {
         super.onPause()
-        splitInstallManager.unregisterListener(listener)
+        splitInstallManager.unregisterListener(installListener)
     }
 
-    private fun downloadPlayerModule() {
+    private fun initializeModuleState() {
+        val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+        if (!prefs.contains(KEY_MODULE_DOWNLOADED)) {
+            prefs.edit().putBoolean(KEY_MODULE_DOWNLOADED, false).apply()
+        }
+        moduleInstallState.value = isModuleDownloaded()
+    }
+
+    private fun updateModuleState() {
+        moduleInstallState.value = isModuleDownloaded()
+    }
+
+    private fun isModuleDownloaded(): Boolean {
+        return getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+            .getBoolean(KEY_MODULE_DOWNLOADED, false)
+    }
+
+    private fun saveModuleDownloadedState(downloaded: Boolean) {
+        getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+            .edit()
+            .putBoolean(KEY_MODULE_DOWNLOADED, downloaded)
+            .apply()
+    }
+
+    private fun downloadModule() {
         val request = SplitInstallRequest.newBuilder()
             .addModule("featureplayer")
             .build()
 
         splitInstallManager.startInstall(request)
-            .addOnSuccessListener { id ->
-                sessionId = id
-                Toast.makeText(this, "Starting download...", Toast.LENGTH_SHORT).show()
-            }
+            .addOnSuccessListener { showToast("Starting download...") }
             .addOnFailureListener { exception ->
-                Toast.makeText(this, "Failed to start download: ${exception.message}", Toast.LENGTH_LONG).show()
+                showToast("Failed to start download: ${exception.message}")
             }
     }
 
     private fun openPlayerStats() {
-        if (getModuleInstallState()) {
-            try {
-                val intent = Intent().setClassName(
-                    this,
-                    "com.example.feature_player.presentation.PlayerStatsActivity"
-                )
-                startActivity(intent)
-            } catch (e: Exception) {
-                Toast.makeText(this, "Error opening module: ${e.message}", Toast.LENGTH_LONG).show()
-            }
-        } else {
-            Toast.makeText(this, "Please download the module first", Toast.LENGTH_SHORT).show()
+        if (!isModuleDownloaded()) {
+            showToast("Please download the module first")
+            return
+        }
+
+        try {
+            val intent = Intent().setClassName(
+                this,
+                "com.example.feature_player.presentation.PlayerStatsActivity"
+            )
+            startActivity(intent)
+        } catch (e: Exception) {
+            showToast("Error opening module: ${e.message}")
         }
     }
-}
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun HomeScreen(
-    isModuleInstalled: Boolean,
-    onDownloadModule: () -> Unit,
-    onOpenPlayerStats: () -> Unit
-) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("CrikStats") },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.primary
-                )
-            )
-        }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Icon(
-                imageVector = Icons.Default.Sports,
-                contentDescription = "Cricket Icon",
-                modifier = Modifier.size(80.dp),
-                tint = MaterialTheme.colorScheme.primary
-            )
+    private fun calculateDownloadProgress(state: SplitInstallSessionState): Int {
+        val totalBytes = state.totalBytesToDownload()
+        return if (totalBytes > 0) {
+            (state.bytesDownloaded() * 100 / totalBytes).toInt()
+        } else 0
+    }
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
-                text = "Welcome to CrikStats",
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = "Cricket Statistics at your fingertips",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-
-            Spacer(modifier = Modifier.height(48.dp))
-
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(20.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "Player Stats Module",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Status: ",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Text(
-                            text = if (isModuleInstalled) "Installed ✓" else "Not Installed",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = if (isModuleInstalled)
-                                MaterialTheme.colorScheme.primary
-                            else
-                                MaterialTheme.colorScheme.error
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    if (!isModuleInstalled) {
-                        Button(
-                            onClick = onDownloadModule,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Download,
-                                contentDescription = "Download"
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text("Download Player Stats Module")
-                        }
-                    } else {
-                        Button(
-                            onClick = onOpenPlayerStats,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.ArrowForward,
-                                contentDescription = "Open"
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text("Open Player Stats")
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer
-                )
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    Text(
-                        text = "About This App",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "This app demonstrates Dynamic Feature Modules with Dagger Hilt dependency injection. Features are downloaded on-demand to reduce initial app size.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer
-                    )
-                }
-            }
-        }
+    private fun showToast(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 }
