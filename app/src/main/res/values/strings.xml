@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">CrikStats</string>
-    <string name="title_feature_player">feature-player</string>
+    <string name="title_featureplayer">Player Stats</string>
+    <string name="title_feature_player">Player Stats</string>
 </resources>
